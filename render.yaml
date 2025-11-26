@@ -2,6 +2,7 @@ services:
   - type: web
     name: pdf-chat-server
     env: python
+    pythonVersion: "3.12"
     buildCommand: ./build.sh
     startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
     envVars:
@@ -9,4 +10,6 @@ services:
         value: $HOME/.cargo
       - key: RUSTUP_HOME
         value: $HOME/.rustup
+      - key: PIP_PREFER_BINARY
+        value: "1"
 

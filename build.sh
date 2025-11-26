@@ -7,10 +7,19 @@ set -e  # Exit on error
 echo "=== Starting build script ==="
 echo "HOME: $HOME"
 echo "PWD: $(pwd)"
+echo "Python version: $(python --version 2>&1 || echo 'Python not found')"
 
 # Set CARGO_HOME to a writable directory BEFORE any cargo/maturin operations
-export CARGO_HOME="$HOME/.cargo"
-export RUSTUP_HOME="$HOME/.rustup"
+# Use /tmp if $HOME/.cargo doesn't work (some Render environments)
+export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}"
+export RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"
+
+# Fallback to /tmp if HOME directory isn't writable
+if [ ! -w "$HOME" ] 2>/dev/null; then
+    echo "Warning: HOME directory not writable, using /tmp"
+    export CARGO_HOME="/tmp/cargo"
+    export RUSTUP_HOME="/tmp/rustup"
+fi
 
 echo "CARGO_HOME: $CARGO_HOME"
 echo "RUSTUP_HOME: $RUSTUP_HOME"
@@ -73,10 +82,20 @@ if [ -f ~/.profile ]; then
     echo "export RUSTUP_HOME=\"$RUSTUP_HOME\"" >> ~/.profile
 fi
 
+# Set PIP_PREFER_BINARY to ensure pip prefers wheels
+export PIP_PREFER_BINARY=1
+
 # Try installing with prefer-binary first (uses wheels when available)
 echo "Installing dependencies (preferring pre-built wheels)..."
+echo "Using CARGO_HOME=$CARGO_HOME and RUSTUP_HOME=$RUSTUP_HOME"
+
 # Use env to explicitly pass environment variables to pip and all its subprocesses
-env CARGO_HOME="$CARGO_HOME" RUSTUP_HOME="$RUSTUP_HOME" pip install --prefer-binary -r requirements.txt
+# Also set CARGO_TARGET_DIR to avoid conflicts
+env CARGO_HOME="$CARGO_HOME" \
+    RUSTUP_HOME="$RUSTUP_HOME" \
+    CARGO_TARGET_DIR="$CARGO_HOME/target" \
+    PIP_PREFER_BINARY=1 \
+    pip install --prefer-binary --no-cache-dir -r requirements.txt
 
 echo "=== Build script completed successfully ==="
 
