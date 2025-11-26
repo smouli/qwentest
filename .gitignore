@@ -12,3 +12,8 @@ dist/
 build/
 .DS_Store
 
+# Generated Q&A pairs and analysis files
+BLUESTONE_Inter_Intel_MSA_QA.md
+generated_qa.md
+RISK_ASSESSMENT_ANALYSIS.md
+
