@@ -1,0 +1,144 @@
+🟥 1. LIABILITY STRUCTURE (1–5)
+
+Q1: Does the contract include a liability cap, and is it favorable or unfavorable to the client?
+
+A: Identify whether a cap exists, what it applies to, and whether exceptions weaken it.
+
+Q2: Are there carve-outs that remove the liability limit for certain types of breaches?
+
+A: Look for uncapped categories like confidentiality, data breaches, or IP infringement.
+
+Q3: Does the contract treat data breach costs or regulatory fines as direct damages?
+
+A: Check how the agreement classifies regulatory penalties or breach-related expenses.
+
+Q4: Is the liability cap linked to fees, a fixed amount, or something else?
+
+A: Determine whether the cap scales with contract value or imposes a static threshold.
+
+🟧 2. INDEMNIFICATION (1–5)
+
+Q1: Who indemnifies whom, and for what categories of claims?
+
+A: Identify whether indemnification is one-way or mutual and what triggers it.
+
+Q2: Is there IP infringement indemnification included?
+
+A: Check if the vendor protects the client against third-party IP claims.
+
+Q3: Are regulatory, privacy, or data protection claims included in indemnification?
+
+A: Determine whether obligations extend to fines, investigations, or consumer claims.
+
+Q4: Are there defense and settlement control provisions?
+
+A: Assess whether the indemnifying party controls the defense or requires approvals.
+
+🟨 3. IP OWNERSHIP (1–5)
+
+Q1: Who owns new work product created during the engagement?
+
+A: Determine whether IP vests in the client, the vendor, or must be expressly assigned.
+
+Q2: Does the agreement properly address pre-existing IP?
+
+A: Check if each party retains ownership of their background IP.
+
+Q3: Are there assignment or license-back mechanisms for non-assignable IP?
+
+A: Evaluate how the contract handles IP that can't legally be assigned.
+
+Q4: Are moral rights waived where applicable?
+
+A: Identify whether contributors waive authorship rights to avoid future disputes.
+
+🟩 4. CONFIDENTIALITY & DATA HANDLING (1–5)
+
+Q1: Does the agreement incorporate confidentiality obligations, and how long do they survive?
+
+A: Check for survival periods and alignment with NDAs or statutory requirements.
+
+Q2: Does the contract impose data security standards on the vendor?
+
+A: Determine whether the vendor must follow specific security measures.
+
+Q3: Is there a Data Processing Agreement (DPA) or GDPR-like exhibit?
+
+A: Evaluate whether personal data handling follows legal requirements.
+
+Q4: Are there clear obligations for return or deletion of data upon termination?
+
+A: Look for timelines and scope of data destruction.
+
+🟦 5. INSURANCE (1–5)
+
+Q1: Are minimum insurance requirements clearly stated?
+
+A: Identify whether CGL, E&O, cyber, and Workers' Comp are required.
+
+Q2: Are coverage limits sufficient for the risk profile?
+
+A: Evaluate whether the limits align with industry norms.
+
+Q3: Does the contract require naming the client as an additional insured?
+
+A: Check for endorsements and proof-of-insurance obligations.
+
+Q4: Are insurers required to meet minimum financial ratings?
+
+A: Look for A.M. Best or equivalent rating requirements.
+
+🟫 6. OPERATIONAL PERFORMANCE (1–5)
+
+Q1: Are service delivery standards defined (e.g., SLAs, quality standards)?
+
+A: Determine if the agreement specifies performance expectations.
+
+Q2: Are acceptance criteria or correction obligations included?
+
+A: Look for requirements to fix defective deliverables.
+
+Q3: Are subcontractor restrictions clearly outlined?
+
+A: Confirm if the vendor must obtain consent before using subcontractors.
+
+Q4: Does the contract require qualified personnel or specific skills?
+
+A: Identify staffing competency requirements.
+
+⬛ 7. TERMINATION & SURVIVAL (1–5)
+
+Q1: Can either party terminate for convenience, and what is the notice period?
+
+A: Determine how easily exits can occur.
+
+Q2: Does the agreement allow immediate termination for data breaches or legal noncompliance?
+
+A: Evaluate termination rights linked to risky scenarios.
+
+Q3: Which obligations explicitly survive termination?
+
+A: Identify survival of IP, confidentiality, indemnity, payment, and liability clauses.
+
+Q4: Are there obligations to return or destroy materials after termination?
+
+A: Assess scope and timelines for return of data and assets.
+
+⬜ 8. COMMERCIAL RESTRICTIONS (1–5)
+
+Q1: Are there non-solicitation or non-compete obligations?
+
+A: Determine whether the vendor can hire or solicit client employees.
+
+Q2: Are there restrictions on publicity, trademarks, or naming the client?
+
+A: Evaluate branding and disclosure limitations.
+
+Q3: Are assignment rights restricted or freely allowed?
+
+A: Check where consent is required for assignment.
+
+Q4: Are there export control, anti-corruption, or compliance requirements?
+
+A: Identify obligations related to legal compliance.
+

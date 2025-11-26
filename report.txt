@@ -1,0 +1,248 @@
+================================================================================
+EVALUATION REPORT
+================================================================================
+
+Total Ground Truth Q&A Pairs: 136
+Total Generated Q&A Pairs: 9
+Matched Pairs: 9
+Match Rate: 6.62%
+
+SCORES:
+  Average LLM Score: 0.500
+  Average Keyword Score: 0.923
+  Average Combined Score: 0.627
+
+================================================================================
+DETAILED RESULTS
+================================================================================
+
+
+--- Pair 1 ---
+Section: SECTION 1.1 — AFFILIATE
+Question: What is the definition of "Affiliate" in this Agreement?
+
+Ground Truth Answer:
+"Affiliate" means, with respect to any entity, any other entity, directly or indirectly, Controlling, Controlled by or under common Control with such entity, and, for purposes hereof North Star Capital, Ltd. and its Affiliates shall be deemed to be Affiliates of BLUESTONE ADVISORS L.P.
+
+Generated Answer:
+An Affiliate refers to any entity that directly or indirectly Controls, is Controlled by, or is under common Control with another entity. Additionally, North Star Capital, Ltd. and its Affiliates are specifically considered Affiliates of BLUESTONE ADVISORS L.P. under this Agreement.
+
+LLM Score: 0.500
+Keyword Score: 0.519
+Combined Score: 0.506
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (14): controlled, affiliates, affiliate, bluestone, common, entity, star, north, indirectly, capital
+Missing Keywords (6): deemed, controlling, purposes, means, hereof, respect
+
+
+--- Pair 2 ---
+Section: SECTION 1.1 — AFFILIATE
+Question: Are North Star Capital, Ltd. and its Affiliates considered Affiliates of BLUESTONE ADVISORS L.P.?
+
+Ground Truth Answer:
+Yes, North Star Capital, Ltd. and its Affiliates are specifically deemed to be Affiliates of BLUESTONE ADVISORS L.P. for purposes of this Agreement.
+
+Generated Answer:
+Yes, North Star Capital, Ltd. and its Affiliates are deemed to be Affiliates of BLUESTONE ADVISORS L.P. for purposes of this Agreement.
+
+LLM Score: 0.500
+Keyword Score: 0.900
+Combined Score: 0.620
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (9): agreement, deemed, affiliates, purposes, bluestone, star, north, capital, advisors
+Missing Keywords (1): specifically
+
+
+--- Pair 3 ---
+Section: SECTION 1.1 — AFFILIATE
+Question: How is the relationship of Control determined for Affiliate status?
+
+Ground Truth Answer:
+Control is determined by direct or indirect relationships where one entity Controls, is Controlled by, or is under common Control with another entity, as defined in Section 1.4.
+
+Generated Answer:
+Control is determined by direct or indirect relationships where one entity Controls, is Controlled by, or is under common Control with another entity, as defined in Section 1.4.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (13): controlled, defined, another, section, relationships, determined, common, entity, controls, control
+Missing Keywords (0): 
+
+
+--- Pair 4 ---
+Section: SECTION 1.2 — AGGREGATED DATA
+Question: What is "Aggregated Data"?
+
+Ground Truth Answer:
+"Aggregated Data" means any aggregated, de-identified data relating to the access or use of the Services by or on behalf of COMPANY, including any performance, analytics or statistical data that INTER INTEL may collect from time to time.
+
+Generated Answer:
+Aggregated Data refers to any aggregated, de-identified data relating to the access or use of the Services by or on behalf of COMPANY, including any performance, analytics or statistical data that INTER INTEL may collect from time to time.
+
+LLM Score: 0.500
+Keyword Score: 0.889
+Combined Score: 0.617
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (16): performance, intel, behalf, services, aggregated, company, data, identified, statistical, relating
+Missing Keywords (1): means
+
+
+--- Pair 5 ---
+Section: SECTION 1.2 — AGGREGATED DATA
+Question: What types of data are included in Aggregated Data?
+
+Ground Truth Answer:
+Aggregated Data includes performance, analytics or statistical data that INTER INTEL may collect from time to time relating to the access or use of the Services by or on behalf of COMPANY.
+
+Generated Answer:
+Aggregated Data includes performance, analytics or statistical data that INTER INTEL may collect from time to time relating to the access or use of the Services by or on behalf of COMPANY.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (15): performance, intel, includes, behalf, services, aggregated, company, data, statistical, collect
+Missing Keywords (0): 
+
+
+--- Pair 6 ---
+Section: SECTION 1.2 — AGGREGATED DATA
+Question: Does Aggregated Data include personally identifiable information?
+
+Ground Truth Answer:
+No, Aggregated Data is specifically defined as de-identified data, meaning it does not contain personally identifiable information.
+
+Generated Answer:
+No, Aggregated Data is specifically defined as de-identified data, meaning it does not contain personally identifiable information.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (10): identifiable, personally, defined, contain, aggregated, data, identified, meaning, information, specifically
+Missing Keywords (0): 
+
+
+--- Pair 7 ---
+Section: SECTION 1.4 — CONTROL
+Question: How is "Control" defined in this Agreement?
+
+Ground Truth Answer:
+"Control" and its derivatives mean: (a) the legal, beneficial or equitable ownership, directly or indirectly, of (i) at least fifty percent (50%) of the aggregate of all voting equity interests in an entity, or (ii) equity interests having the right to at least fifty percent (50%) of the profits of an entity or, in the event of dissolution, to at least fifty percent (50%) of the assets of an entity; (b) the right to appoint, directly or indirectly, a majority of the board of directors; (c) the right to control, directly or indirectly, the management or direction of the entity by contract or corporate governance document; or (d) in the case of a partnership, the holding by an entity (or one of its Affiliates) of the position of sole general partner.
+
+Generated Answer:
+Control and its derivatives mean: (a) the legal, beneficial or equitable ownership, directly or indirectly, of at least fifty percent (50%) of the aggregate of all voting equity interests in an entity, or equity interests having the right to at least fifty percent (50%) of the profits of an entity or, in the event of dissolution, to at least fifty percent (50%) of the assets of an entity; (b) the right to appoint, directly or indirectly, a majority of the board of directors; (c) the right to control, directly or indirectly, the management or direction of the entity by contract or corporate governance document; or (d) in the case of a partnership, the holding by an entity (or one of its Affiliates) of the position of sole general partner.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+
+Matched Keywords (41): least, position, percent, fifty, mean, event, equitable, corporate, appoint, partner
+Missing Keywords (0): 
+
+
+--- Pair 8 ---
+Section: SECTION 1.4 — CONTROL
+Question: What percentage of voting equity interests constitutes Control?
+
+Ground Truth Answer:
+At least fifty percent (50%) of the aggregate of all voting equity interests in an entity constitutes Control.
+
+Generated Answer:
+At least fifty percent (50%) of the aggregate of all voting equity interests in an entity constitutes Control.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: Error code: 500 - {'error': {'message': 'litellm.InternalServerError: InternalServerError: OpenAIException - Connection error.. Received Model Group=Qwen3-32B\nAvailable Model Group Fallbacks=None', 'type': None, 'param': None, 'code': '500'}}
+
+Matched Keywords (10): least, fifty, percent, equity, interests, constitutes, entity, voting, control, aggregate
+Missing Keywords (0): 
+
+
+--- Pair 9 ---
+Section: SECTION 1.4 — CONTROL
+Question: Can Control be established through the right to appoint directors?
+
+Ground Truth Answer:
+Yes, the right to appoint, directly or indirectly, a majority of the board of directors constitutes Control.
+
+Generated Answer:
+Yes, the right to appoint, directly or indirectly, a majority of the board of directors constitutes Control.
+
+LLM Score: 0.500
+Keyword Score: 1.000
+Combined Score: 0.650
+
+LLM Judgment:
+Error during LLM evaluation: Error code: 500 - {'error': {'message': 'litellm.InternalServerError: InternalServerError: OpenAIException - Connection error.. Received Model Group=Qwen3-32B\nAvailable Model Group Fallbacks=None', 'type': None, 'param': None, 'code': '500'}}
+
+Matched Keywords (9): directors, appoint, constitutes, majority, right, indirectly, control, board, directly
+Missing Keywords (0): 

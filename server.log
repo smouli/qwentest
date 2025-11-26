@@ -1,0 +1,24 @@
+/Users/sanatmouli/Projects/RajaTask/qwentest/app.py:19: PydanticDeprecatedSince20: Support for class-based `config` is deprecated, use ConfigDict instead. Deprecated in Pydantic V2.0 to be removed in V3.0. See Pydantic V2 Migration Guide at https://errors.pydantic.dev/2.12/migration/
+  class Settings(BaseSettings):
+INFO:     Started server process [77776]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:6969 (Press CTRL+C to quit)
+INFO:     127.0.0.1:58090 - "GET / HTTP/1.1" 200 OK
+INFO:__main__:Processing document: 58814 characters, 9245 words
+INFO:__main__:Document split into 8 chunk(s)
+INFO:__main__:Processing chunk 1/8 (11942 characters)
+INFO:httpx:HTTP Request: POST https://llm-api.annotet.com/chat/completions "HTTP/1.1 504 Gateway Time-out"
+INFO:openai._base_client:Retrying request to /chat/completions in 0.481350 seconds
+INFO:httpx:HTTP Request: POST https://llm-api.annotet.com/chat/completions "HTTP/1.1 504 Gateway Time-out"
+INFO:openai._base_client:Retrying request to /chat/completions in 0.880571 seconds
+INFO:httpx:HTTP Request: POST https://llm-api.annotet.com/chat/completions "HTTP/1.1 504 Gateway Time-out"
+ERROR:__main__:LLM error on chunk 1: <html>
+<head><title>504 Gateway Time-out</title></head>
+<body>
+<center><h1>504 Gateway Time-out</h1></center>
+<hr><center>nginx/1.18.0 (Ubuntu)</center>
+</body>
+</html>
+INFO:     127.0.0.1:58096 - "POST /api/process-pdf HTTP/1.1" 504 Gateway Timeout
+INFO:     127.0.0.1:60552 - "GET / HTTP/1.1" 200 OK

@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Chat - Qwen3-32B</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 0.9em;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            background: #f8f9ff;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .upload-icon {
+            font-size: 64px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            color: #333;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+
+        .upload-hint {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .file-info {
+            background: #f0f2ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .file-info.show {
+            display: block;
+        }
+
+        .file-name {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .query-section {
+            margin-bottom: 20px;
+        }
+
+        .query-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        #queryInput {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 0.9em;
+            font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+            transition: border-color 0.3s;
+            min-height: 200px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        #queryInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            flex: 1;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: #e0e0e0;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .response-section {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .response-section.show {
+            display: block;
+        }
+
+        .response-label {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .response-box {
+            background: #f8f9ff;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 100px;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #ffe8e8;
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            padding: 15px;
+            color: #d63031;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .mode-selector {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 10px;
+        }
+
+        .mode-label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .mode-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .mode-option {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mode-option:hover {
+            background: #f0f2ff;
+        }
+
+        .mode-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .mode-option span {
+            flex: 1;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .mode-option small {
+            color: #666;
+            font-size: 0.8em;
+            margin-left: 10px;
+        }
+
+        .risk-assessment-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9ff;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+        }
+
+        .risk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .risk-header h2 {
+            color: #333;
+            font-size: 1.5em;
+            margin: 0;
+        }
+
+        .overall-score {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+
+        .overall-score.low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .overall-score.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .overall-score.high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .overall-score.critical {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+
+        .category-scores {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .category-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .category-score {
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .category-score.low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .category-score.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .category-score.high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .category-score.critical {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+
+        .question-details {
+            margin-top: 20px;
+        }
+
+        .question-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .question-text {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .question-answer {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .question-meta {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .question-score {
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .question-risk {
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        .question-risk.low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .question-risk.medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .question-risk.high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .question-risk.critical {
+            background: #f5c6cb;
+            color: #721c24;
+        }
+
+        .question-reasoning {
+            font-size: 0.85em;
+            color: #888;
+            font-style: italic;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📄 PDF Chat</h1>
+        <p class="subtitle">Upload a PDF and chat with Qwen3-32B</p>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📎</div>
+            <div class="upload-text">Drag and drop your PDF here</div>
+            <div class="upload-hint">or click to browse</div>
+        </div>
+        <input type="file" id="fileInput" accept=".pdf" />
+
+        <div class="file-info" id="fileInfo">
+            <div class="file-name" id="fileName"></div>
+            <div class="file-size" id="fileSize"></div>
+        </div>
+
+        <div class="query-section">
+            <label class="query-label" for="queryInput">System Prompt (optional - leave empty to use default contract parsing prompt):</label>
+            <textarea 
+                id="queryInput" 
+                placeholder="Enter custom prompt or leave empty for default contract parsing..."
+            ></textarea>
+        </div>
+
+        <div class="mode-selector">
+            <label class="mode-label">Processing Mode:</label>
+            <div class="mode-options">
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="process-pdf" checked>
+                    <span>Process PDF + Risk Assessment</span>
+                    <small>POST /api/process-pdf</small>
+                </label>
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="evaluate-rubric">
+                    <span>Risk Assessment Only</span>
+                    <small>POST /api/evaluate-rubric</small>
+                </label>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-primary" id="processBtn" disabled>Process PDF</button>
+            <button class="btn-secondary" id="clearBtn">Clear</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <div>Processing PDF...</div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="response-section" id="responseSection">
+            <div class="response-label">Q&A Pairs:</div>
+            <div class="response-box" id="responseBox"></div>
+        </div>
+
+        <div class="risk-assessment-section" id="riskAssessmentSection" style="display: none;">
+            <div class="risk-header">
+                <h2>Risk Assessment</h2>
+                <div class="overall-score" id="overallScore"></div>
+            </div>
+            <div class="category-scores" id="categoryScores"></div>
+            <div class="question-details" id="questionDetails"></div>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileSize = document.getElementById('fileSize');
+        const processBtn = document.getElementById('processBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const queryInput = document.getElementById('queryInput');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const responseSection = document.getElementById('responseSection');
+        const responseBox = document.getElementById('responseBox');
+
+        let selectedFile = null;
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.pdf')) {
+                showError('Please select a PDF file.');
+                return;
+            }
+
+            selectedFile = file;
+            fileName.textContent = `📄 ${file.name}`;
+            fileSize.textContent = `Size: ${(file.size / 1024).toFixed(2)} KB`;
+            fileInfo.classList.add('show');
+            processBtn.disabled = false;
+            hideError();
+            hideResponse();
+        }
+
+        // Process PDF
+        processBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                showError('Please select a PDF file first.');
+                return;
+            }
+
+            const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            
+            const query = queryInput.value.trim();
+            if (query) {
+                formData.append('query', query);
+            }
+
+            // Set evaluate_rubric based on mode
+            if (selectedMode === 'process-pdf') {
+                formData.append('evaluate_rubric', 'true');
+            }
+
+            showLoading(selectedMode);
+            hideError();
+            hideResponse();
+            hideRiskAssessment();
+            processBtn.disabled = true;
+
+            try {
+                const endpoint = selectedMode === 'evaluate-rubric' 
+                    ? '/api/evaluate-rubric' 
+                    : '/api/process-pdf';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error processing PDF');
+                }
+
+                // Display Q&A pairs if available
+                if (data.response) {
+                    responseBox.textContent = data.response;
+                    responseSection.classList.add('show');
+                }
+
+                // Display risk assessment if available
+                if (data.risk_assessment) {
+                    displayRiskAssessment(data.risk_assessment);
+                }
+            } catch (err) {
+                showError(err.message || 'An error occurred while processing the PDF.');
+            } finally {
+                hideLoading();
+                processBtn.disabled = false;
+            }
+        });
+
+        // Clear button
+        clearBtn.addEventListener('click', () => {
+            selectedFile = null;
+            fileInput.value = '';
+            fileInfo.classList.remove('show');
+            processBtn.disabled = true;
+            queryInput.value = '';
+            hideResponse();
+            hideError();
+            hideRiskAssessment();
+        });
+
+        function showLoading(mode) {
+            const modeText = mode === 'evaluate-rubric' 
+                ? 'Evaluating contract against rubric (32 questions)...' 
+                : 'Processing PDF and generating Q&A pairs + Risk Assessment...';
+            loading.querySelector('div:last-child').textContent = modeText;
+            loading.classList.add('show');
+        }
+
+        function hideLoading() {
+            loading.classList.remove('show');
+        }
+
+        function showError(message) {
+            error.textContent = message;
+            error.classList.add('show');
+        }
+
+        function hideError() {
+            error.classList.remove('show');
+        }
+
+        function hideResponse() {
+            responseSection.classList.remove('show');
+        }
+
+        function hideRiskAssessment() {
+            document.getElementById('riskAssessmentSection').style.display = 'none';
+        }
+
+        function getRiskClass(riskLevel) {
+            return riskLevel ? riskLevel.toLowerCase() : 'medium';
+        }
+
+        function displayRiskAssessment(riskAssessment) {
+            const section = document.getElementById('riskAssessmentSection');
+            const overallScoreEl = document.getElementById('overallScore');
+            const categoryScoresEl = document.getElementById('categoryScores');
+            const questionDetailsEl = document.getElementById('questionDetails');
+
+            // Display overall score
+            const overallScore = riskAssessment.overall_score || 0;
+            const overallRisk = riskAssessment.overall_risk_level || 'UNKNOWN';
+            overallScoreEl.textContent = `Overall Score: ${overallScore.toFixed(2)}/5.0 - ${overallRisk}`;
+            overallScoreEl.className = `overall-score ${getRiskClass(overallRisk)}`;
+
+            // Display category scores
+            categoryScoresEl.innerHTML = '';
+            if (riskAssessment.category_scores) {
+                riskAssessment.category_scores.forEach(category => {
+                    const categoryCard = document.createElement('div');
+                    categoryCard.className = 'category-card';
+                    categoryCard.innerHTML = `
+                        <div class="category-header">
+                            <span class="category-name">${category.category}</span>
+                            <span class="category-score ${getRiskClass(category.risk_level)}">
+                                ${category.average_score.toFixed(2)}/5.0 - ${category.risk_level}
+                            </span>
+                        </div>
+                    `;
+                    categoryScoresEl.appendChild(categoryCard);
+                });
+            }
+
+            // Display question details
+            questionDetailsEl.innerHTML = '<h3 style="margin-bottom: 15px; color: #333;">Question-by-Question Breakdown</h3>';
+            if (riskAssessment.category_scores) {
+                riskAssessment.category_scores.forEach(category => {
+                    const categoryHeader = document.createElement('div');
+                    categoryHeader.className = 'question-item';
+                    categoryHeader.style.borderLeft = '4px solid #667eea';
+                    categoryHeader.innerHTML = `
+                        <div class="question-text" style="font-size: 1.1em; margin-bottom: 5px;">
+                            ${category.category} (Average: ${category.average_score.toFixed(2)}/5.0)
+                        </div>
+                    `;
+                    questionDetailsEl.appendChild(categoryHeader);
+
+                    category.questions.forEach((qa, idx) => {
+                        const questionItem = document.createElement('div');
+                        questionItem.className = 'question-item';
+                        questionItem.innerHTML = `
+                            <div class="question-text">Q${qa.question_number}: ${qa.question}</div>
+                            <div class="question-answer"><strong>Answer:</strong> ${qa.answer}</div>
+                            ${qa.reasoning ? `<div class="question-reasoning"><strong>Reasoning:</strong> ${qa.reasoning}</div>` : ''}
+                            <div class="question-meta">
+                                <span class="question-score">Score: ${qa.score.toFixed(2)}/5.0</span>
+                                <span class="question-risk ${getRiskClass(qa.risk_level)}">${qa.risk_level}</span>
+                            </div>
+                        `;
+                        questionDetailsEl.appendChild(questionItem);
+                    });
+                });
+            }
+
+            section.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
