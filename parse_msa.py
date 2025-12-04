@@ -1,20 +1,21 @@
 #!/usr/bin/env python3
 """
-Script to generate Q&A pairs from a PDF file using the API
+Script to parse an MSA PDF file and extract structured data.
 """
 
 import argparse
 import sys
 import requests
+import json
 from pathlib import Path
 
-def generate_qa_from_pdf(pdf_path: str, output_path: str, server_url: str = "http://localhost:6969"):
+def parse_msa_pdf(pdf_path: str, output_path: str = None, server_url: str = "http://localhost:6969"):
     """
-    Generate Q&A pairs from a PDF file
+    Parse an MSA PDF file and extract structured data.
     
     Args:
         pdf_path: Path to the PDF file
-        output_path: Path to save the generated Q&A markdown
+        output_path: Optional path to save the JSON output (default: {pdf_name}_msa.json)
         server_url: URL of the FastAPI server
     """
     pdf_file = Path(pdf_path)
@@ -23,7 +24,7 @@ def generate_qa_from_pdf(pdf_path: str, output_path: str, server_url: str = "htt
         print(f"Error: PDF file not found: {pdf_path}", file=sys.stderr)
         sys.exit(1)
     
-    print(f"Uploading PDF: {pdf_path}", file=sys.stderr)
+    print(f"Parsing MSA PDF: {pdf_path}", file=sys.stderr)
     print(f"Server URL: {server_url}", file=sys.stderr)
     
     # Prepare the file upload
@@ -31,9 +32,10 @@ def generate_qa_from_pdf(pdf_path: str, output_path: str, server_url: str = "htt
         files = {'file': (pdf_file.name, f, 'application/pdf')}
         
         try:
-            # Make request to process-pdf endpoint
+            # Make request to parse-msa endpoint
+            print("Sending request to server...", file=sys.stderr)
             response = requests.post(
-                f"{server_url}/api/process-pdf",
+                f"{server_url}/api/parse-msa",
                 files=files,
                 timeout=600  # 10 minutes timeout
             )
@@ -49,16 +51,25 @@ def generate_qa_from_pdf(pdf_path: str, output_path: str, server_url: str = "htt
                 print(f"Error: {data.get('detail', 'Unknown error')}", file=sys.stderr)
                 sys.exit(1)
             
-            # Extract the Q&A response
-            qa_content = data.get('response', '')
+            # Extract the MSA data
+            msa_data = data.get('msa_data', {})
+            
+            # Determine output path
+            if output_path is None:
+                output_path = pdf_file.stem + "_msa.json"
             
             # Save to output file
             output_file = Path(output_path)
-            output_file.write_text(qa_content, encoding='utf-8')
+            with open(output_file, 'w', encoding='utf-8') as f:
+                json.dump(msa_data, f, indent=2, ensure_ascii=False)
             
-            print(f"\nSuccess! Generated Q&A pairs saved to: {output_path}", file=sys.stderr)
-            print(f"Total chunks processed: {data.get('chunks_processed', 1)}", file=sys.stderr)
-            print(f"Response length: {len(qa_content)} characters", file=sys.stderr)
+            print(f"\n✅ Success! MSA data saved to: {output_path}", file=sys.stderr)
+            print(f"Filename: {data.get('filename', 'N/A')}", file=sys.stderr)
+            print(f"\nExtracted fields:", file=sys.stderr)
+            print(f"  - MSA ID: {msa_data.get('msa_id', 'N/A')}", file=sys.stderr)
+            print(f"  - Effective Date: {msa_data.get('effective_date', 'N/A')}", file=sys.stderr)
+            print(f"  - Customer: {msa_data.get('customer', {}).get('legal_name', 'N/A')}", file=sys.stderr)
+            print(f"  - Provider: {msa_data.get('provider', {}).get('legal_name', 'N/A')}", file=sys.stderr)
             
         except requests.exceptions.ConnectionError:
             print(f"Error: Could not connect to server at {server_url}", file=sys.stderr)
@@ -75,7 +86,7 @@ def generate_qa_from_pdf(pdf_path: str, output_path: str, server_url: str = "htt
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Generate Q&A pairs from a PDF file"
+        description="Parse an MSA PDF file and extract structured data"
     )
     parser.add_argument(
         "pdf_path",
@@ -86,8 +97,8 @@ def main():
         "--output",
         "-o",
         type=str,
-        default="generated_qa.md",
-        help="Output file path (default: generated_qa.md)"
+        default=None,
+        help="Output JSON file path (default: {pdf_name}_msa.json)"
     )
     parser.add_argument(
         "--server",
@@ -99,10 +110,9 @@ def main():
     
     args = parser.parse_args()
     
-    generate_qa_from_pdf(args.pdf_path, args.output, args.server)
+    parse_msa_pdf(args.pdf_path, args.output, args.server)
 
 
 if __name__ == "__main__":
     main()
-
 

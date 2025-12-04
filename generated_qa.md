@@ -35,3 +35,4 @@ A2: At least fifty percent (50%) of the aggregate of all voting equity interests
 Q3: Can Control be established through the right to appoint directors?
 A3: Yes, the right to appoint, directly or indirectly, a majority of the board of directors constitutes Control.
 
+

@@ -14,6 +14,7 @@ import logging
 import re
 from evaluator import Evaluator, EvaluatorSettings
 from rubric_evaluator import RubricEvaluator, RubricSettings
+from msa_parser import MSAParser
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -21,21 +22,19 @@ logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
     OPENAI_API_KEY: str
-    OPEN_AI_MODEL: str = "Qwen3-32B"
+    OPEN_AI_MODEL: str = "gpt-4o"  # Using OpenAI's GPT-4o model
     OPENAI_TEMPERATURE: float = 0
-    INFERENCE_SERVER_URL: str = "https://llm-api.annotet.com"
 
     class Config:
         env_file = ".env"
 
 settings = Settings()
 
-# Initialize LangChain LLM with timeout settings
+# Initialize LangChain LLM with OpenAI API
 llm = ChatOpenAI(
     model=settings.OPEN_AI_MODEL,
     temperature=settings.OPENAI_TEMPERATURE,
     openai_api_key=settings.OPENAI_API_KEY,
-    openai_api_base=settings.INFERENCE_SERVER_URL,
     timeout=600,  # 10 minutes timeout
     max_retries=2
 )
@@ -52,6 +51,9 @@ try:
     logger.info("Loaded evaluation rubric")
 except FileNotFoundError:
     logger.warning("evaluation_rubric.txt not found. Rubric evaluation will be disabled.")
+
+# Initialize MSA parser
+msa_parser = MSAParser(llm)
 
 app = FastAPI(title="PDF Chat Server")
 
@@ -476,6 +478,59 @@ async def evaluate_rubric_endpoint(file: UploadFile = File(...)):
     except Exception as e:
         logger.error(f"Error in rubric evaluation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error evaluating rubric: {str(e)}")
+
+
+@app.post("/api/parse-msa")
+async def parse_msa(file: UploadFile = File(...)):
+    """
+    Parse an MSA PDF document and extract structured data according to the MSA schema.
+    
+    Returns:
+        JSON object containing structured MSA data matching the predefined schema
+    """
+    if not file.filename or not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="File must be a PDF")
+    
+    text_length = 0
+    try:
+        # Extract text from PDF
+        file_content = await file.read()
+        text = extract_text_from_pdf(file_content)
+        
+        text_length = len(text)
+        word_count = len(text.split())
+        logger.info(f"Parsing MSA document: {file.filename} ({text_length} characters, {word_count} words)")
+        
+        # Warn if document is very large
+        if text_length > 50000:
+            logger.warning(f"Large document detected ({text_length} chars). Processing may take longer or timeout.")
+        
+        # Parse MSA using the parser
+        msa_data = msa_parser.parse(text)
+        
+        return JSONResponse(content={
+            "status": "success",
+            "filename": file.filename,
+            "text_length": text_length,
+            "msa_data": msa_data
+        })
+    except ValueError as e:
+        logger.error(f"Validation error in MSA parsing: {str(e)}")
+        raise HTTPException(status_code=400, detail=f"Error parsing MSA: {str(e)}")
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"Error parsing MSA: {error_msg}")
+        
+        # Check for timeout errors
+        error_lower = error_msg.lower()
+        if any(keyword in error_lower for keyword in ["timeout", "504", "gateway", "timed out", "gateway time-out"]):
+            size_info = f" ({text_length} characters)" if text_length > 0 else ""
+            raise HTTPException(
+                status_code=504,
+                detail=f"LLM request timed out. The document may be too large{size_info}. "
+                       f"Try processing a smaller document or contact support. Error: {error_msg[:300]}"
+            )
+        raise HTTPException(status_code=500, detail=f"Error parsing MSA: {str(e)[:500]}")
 
 
 if __name__ == "__main__":

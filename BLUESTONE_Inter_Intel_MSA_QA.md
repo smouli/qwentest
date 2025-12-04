@@ -558,3 +558,4 @@ A2: Vendor will Process any Client Data in a manner consistent with the Client's
 Q3: What Privacy Shield frameworks are referenced?
 A3: The EU-US and Swiss-US Privacy Shield Framework Agreements maintained by the Department of Commerce are referenced.
 
+

@@ -509,6 +509,11 @@
                     <span>Risk Assessment Only</span>
                     <small>POST /api/evaluate-rubric</small>
                 </label>
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="parse-msa">
+                    <span>Parse MSA (Structured Data)</span>
+                    <small>POST /api/parse-msa</small>
+                </label>
             </div>
         </div>
 
@@ -617,10 +622,11 @@
                 formData.append('query', query);
             }
 
-            // Set evaluate_rubric based on mode
+            // Set evaluate_rubric based on mode (only for process-pdf)
             if (selectedMode === 'process-pdf') {
                 formData.append('evaluate_rubric', 'true');
             }
+            // Note: parse-msa mode doesn't need evaluate_rubric parameter
 
             showLoading(selectedMode);
             hideError();
@@ -629,9 +635,14 @@
             processBtn.disabled = true;
 
             try {
-                const endpoint = selectedMode === 'evaluate-rubric' 
-                    ? '/api/evaluate-rubric' 
-                    : '/api/process-pdf';
+                let endpoint;
+                if (selectedMode === 'evaluate-rubric') {
+                    endpoint = '/api/evaluate-rubric';
+                } else if (selectedMode === 'parse-msa') {
+                    endpoint = '/api/parse-msa';
+                } else {
+                    endpoint = '/api/process-pdf';
+                }
                 
                 const response = await fetch(endpoint, {
                     method: 'POST',
@@ -644,15 +655,23 @@
                     throw new Error(data.detail || 'Error processing PDF');
                 }
 
-                // Display Q&A pairs if available
-                if (data.response) {
-                    responseBox.textContent = data.response;
+                // Handle MSA parsing response
+                if (selectedMode === 'parse-msa' && data.msa_data) {
+                    responseBox.textContent = JSON.stringify(data.msa_data, null, 2);
                     responseSection.classList.add('show');
-                }
+                    responseSection.querySelector('.response-label').textContent = 'MSA Structured Data (JSON):';
+                } else {
+                    // Display Q&A pairs if available
+                    if (data.response) {
+                        responseBox.textContent = data.response;
+                        responseSection.classList.add('show');
+                        responseSection.querySelector('.response-label').textContent = 'Q&A Pairs:';
+                    }
 
-                // Display risk assessment if available
-                if (data.risk_assessment) {
-                    displayRiskAssessment(data.risk_assessment);
+                    // Display risk assessment if available
+                    if (data.risk_assessment) {
+                        displayRiskAssessment(data.risk_assessment);
+                    }
                 }
             } catch (err) {
                 showError(err.message || 'An error occurred while processing the PDF.');
@@ -675,9 +694,14 @@
         });
 
         function showLoading(mode) {
-            const modeText = mode === 'evaluate-rubric' 
-                ? 'Evaluating contract against rubric (32 questions)...' 
-                : 'Processing PDF and generating Q&A pairs + Risk Assessment...';
+            let modeText;
+            if (mode === 'evaluate-rubric') {
+                modeText = 'Evaluating contract against rubric (32 questions)...';
+            } else if (mode === 'parse-msa') {
+                modeText = 'Parsing MSA and extracting structured data...';
+            } else {
+                modeText = 'Processing PDF and generating Q&A pairs + Risk Assessment...';
+            }
             loading.querySelector('div:last-child').textContent = modeText;
             loading.classList.add('show');
         }

@@ -132,3 +132,4 @@ Score Range    → Risk Level
 2. **Medium-term**: Collect expert evaluations for a sample of contracts to create ground truth
 3. **Long-term**: Implement hybrid evaluation (LLM + keywords + expert review)
 
+

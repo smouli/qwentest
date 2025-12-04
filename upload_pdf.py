@@ -105,3 +105,4 @@ if __name__ == "__main__":
     success = upload_pdf(file_path, server_url, query)
     sys.exit(0 if success else 1)
 
+

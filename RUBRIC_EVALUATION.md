@@ -208,3 +208,4 @@ After modifying the rubric file, restart the server to load the new rubric.
 **Issue**: Low scores across all categories
 - **Solution**: This may indicate the contract has significant gaps. Review the detailed answers and reasoning for each question.
 
+

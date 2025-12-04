@@ -15,9 +15,8 @@ logger = logging.getLogger(__name__)
 
 class RubricSettings(BaseSettings):
     OPENAI_API_KEY: str
-    OPEN_AI_MODEL: str = "Qwen3-32B"
+    OPEN_AI_MODEL: str = "gpt-4o"  # Using OpenAI's GPT-4o model
     OPENAI_TEMPERATURE: float = 0
-    INFERENCE_SERVER_URL: str = "https://llm-api.annotet.com"
 
     class Config:
         env_file = ".env"
@@ -202,7 +201,6 @@ class RubricEvaluator:
             model=self.settings.OPEN_AI_MODEL,
             temperature=self.settings.OPENAI_TEMPERATURE,
             openai_api_key=self.settings.OPENAI_API_KEY,
-            openai_api_base=self.settings.INFERENCE_SERVER_URL,
             timeout=300,
             max_retries=2
         )
