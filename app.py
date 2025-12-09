@@ -568,6 +568,7 @@ async def assess_risk(msa_data: dict):
         logger.info("=" * 80)
         logger.info("Risk Assessment Request Received")
         logger.info("=" * 80)
+        logger.info(f"Received MSA data keys: {list(msa_data.keys()) if isinstance(msa_data, dict) else 'Not a dict'}")
         
         # Assess MSA risk (parallel processing)
         assessment_result = await risk_assessor.assess_msa(msa_data)

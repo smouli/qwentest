@@ -977,6 +977,12 @@
             // Display clause assessments
             categoryScoresEl.innerHTML = '';
             if (data.clause_assessments && data.clause_assessments.length > 0) {
+                // Clear summary first if it exists
+                const existingSummary = categoryScoresEl.querySelector('div');
+                if (existingSummary && existingSummary.textContent.includes('Overall Compliance Score')) {
+                    categoryScoresEl.innerHTML = '';
+                }
+                
                 data.clause_assessments.forEach(clause => {
                     const clauseCard = document.createElement('div');
                     clauseCard.className = 'category-card';
@@ -1042,6 +1048,16 @@
                     `;
                     questionDetailsEl.appendChild(clauseItem);
                 });
+            } else {
+                // Show message if no clauses were assessed
+                const noClausesMsg = document.createElement('div');
+                noClausesMsg.className = 'question-item';
+                noClausesMsg.style.cssText = 'padding: 20px; text-align: center; color: #666;';
+                noClausesMsg.innerHTML = `
+                    <p style="margin: 0;">No clauses were found in the MSA data to assess.</p>
+                    <p style="margin: 10px 0 0 0; font-size: 0.9em;">Please ensure the MSA JSON contains clause data.</p>
+                `;
+                questionDetailsEl.appendChild(noClausesMsg);
             }
 
             section.style.display = 'block';

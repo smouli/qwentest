@@ -332,13 +332,50 @@ class RiskAssessor:
             "insurance": "insurance",
         }
         
-        msa_content = msa_data.get("MASTER_SERVICE_AGREEMENT", msa_data)
+        # Handle both wrapped and unwrapped formats
+        # First try to get MASTER_SERVICE_AGREEMENT, if not found, use msa_data directly
+        if "MASTER_SERVICE_AGREEMENT" in msa_data:
+            msa_content = msa_data["MASTER_SERVICE_AGREEMENT"]
+            # Handle double-wrapping (in case it's nested)
+            if isinstance(msa_content, dict) and "MASTER_SERVICE_AGREEMENT" in msa_content:
+                logger.info("Detected double-wrapping, extracting inner MASTER_SERVICE_AGREEMENT")
+                msa_content = msa_content["MASTER_SERVICE_AGREEMENT"]
+        else:
+            msa_content = msa_data
+        
+        # Debug logging
+        logger.info(f"MSA content type: {type(msa_content)}")
+        if isinstance(msa_content, dict):
+            all_keys = list(msa_content.keys())
+            logger.info(f"MSA content has {len(all_keys)} keys. First 15 keys: {all_keys[:15]}")
+            # Check if any of our target clauses exist
+            clause_keys_found = [k for k in clause_mapping.values() if k in msa_content]
+            logger.info(f"Found {len(clause_keys_found)} target clause keys: {clause_keys_found[:10]}")
+        else:
+            logger.error(f"MSA content is not a dict: {type(msa_content)}")
+            return clauses
         
         for clause_key, clause_path in clause_mapping.items():
-            clause_data = msa_content.get(clause_path)
-            if clause_data is not None:
-                clauses[clause_key] = clause_data
+            # Check if clause exists in the structure (even if null)
+            if clause_path in msa_content:
+                clause_data = msa_content.get(clause_path)
+                # Include clause even if null - we'll assess it as missing
+                clauses[clause_key] = clause_data if clause_data is not None else {}
+                has_data = clause_data is not None and clause_data != {}
+                logger.info(f"✓ Found clause '{clause_key}' ({clause_path}): {'has data' if has_data else 'null/empty'}")
+            else:
+                logger.warning(f"✗ Clause '{clause_key}' ({clause_path}) NOT found in MSA content")
         
+        if len(clauses) == 0:
+            logger.error("=" * 80)
+            logger.error("WARNING: No clauses extracted! Available keys in MSA content:")
+            if isinstance(msa_content, dict):
+                for key in list(msa_content.keys())[:20]:
+                    value_type = type(msa_content[key]).__name__
+                    logger.error(f"  - {key}: {value_type}")
+            logger.error("=" * 80)
+        
+        logger.info(f"Extracted {len(clauses)} clauses: {list(clauses.keys())}")
         return clauses
     
     async def _assess_clause(self, clause_name: str, clause_data: Dict[str, Any]) -> ClauseRiskAssessment:
@@ -354,6 +391,18 @@ class RiskAssessor:
                 risk_factors=["No assessment prompt available"],
                 recommendations=["Review clause manually"],
                 details={}
+            )
+        
+        # Handle null/empty clause data
+        if not clause_data or clause_data == {}:
+            logger.info(f"Clause {clause_name} is null or empty - assessing as missing")
+            return ClauseRiskAssessment(
+                clause_name=clause_name,
+                compliance_score=0.0,
+                risk_level="HIGH",
+                risk_factors=[f"{clause_name.replace('_', ' ').title()} clause is missing or not specified in the MSA"],
+                recommendations=[f"Add {clause_name.replace('_', ' ').title()} clause to the MSA"],
+                details={"status": "missing"}
             )
         
         # Create the assessment prompt
