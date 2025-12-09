@@ -25,17 +25,24 @@ source venv/bin/activate  # On macOS/Linux
 pip install -r requirements.txt
 ```
 
-2. Create a `.env` file with your OpenAI API key:
+2. Create a `.env` file with your API keys:
    ```bash
    OPENAI_API_KEY=sk-proj-your-api-key-here
    OPEN_AI_MODEL=gpt-4o
    OPENAI_TEMPERATURE=0
+   # Qwen model settings for MSA parsing (optional - uses OpenAI key if not set)
+   QWEN_MODEL=Qwen3-32B
+   QWEN_API_KEY=your-qwen-api-key-here  # Optional, defaults to OPENAI_API_KEY
+   QWEN_INFERENCE_SERVER_URL=https://llm-api.annotet.com
    ```
    
    Or set environment variables:
    - `OPENAI_API_KEY`: Your OpenAI API key (required)
-   - `OPEN_AI_MODEL`: Model name (default: gpt-4o)
+   - `OPEN_AI_MODEL`: Model name for general processing (default: gpt-4o)
    - `OPENAI_TEMPERATURE`: Temperature setting (default: 0)
+   - `QWEN_MODEL`: Qwen model name for MSA parsing (default: Qwen3-32B)
+   - `QWEN_API_KEY`: Qwen API key (optional, defaults to OPENAI_API_KEY)
+   - `QWEN_INFERENCE_SERVER_URL`: Qwen inference server URL (default: https://llm-api.annotet.com)
 
 3. Run the server:
 ```bash
@@ -70,6 +77,8 @@ http://localhost:6969
 ## MSA Parsing
 
 The application includes a specialized parser for Master Service Agreements (MSAs) that extracts structured data according to a comprehensive schema.
+
+**Note:** MSA parsing uses the Qwen model (Qwen3-32B) via the custom inference server, while other endpoints use OpenAI's API. This allows for better performance on structured data extraction tasks.
 
 ### Using the MSA Parser
 

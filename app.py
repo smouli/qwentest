@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from langchain_openai import ChatOpenAI
 from pydantic_settings import BaseSettings
 from typing import Optional
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 import PyPDF2
 import io
 import os
@@ -15,18 +15,22 @@ import re
 from evaluator import Evaluator, EvaluatorSettings
 from rubric_evaluator import RubricEvaluator, RubricSettings
 from msa_parser import MSAParser
+from risk_assessor import RiskAssessor
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class Settings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", extra="ignore")
+    
     OPENAI_API_KEY: str
     OPEN_AI_MODEL: str = "gpt-4o"  # Using OpenAI's GPT-4o model
     OPENAI_TEMPERATURE: float = 0
-
-    class Config:
-        env_file = ".env"
+    # Qwen model settings for MSA parsing
+    QWEN_MODEL: str = "Qwen3-32B"
+    QWEN_API_KEY: str = "sk-f91a49b77055e003e779c6429e509438"  # Optional, can use same as OpenAI key
+    QWEN_INFERENCE_SERVER_URL: str = "https://llm-api.annotet.com"
 
 settings = Settings()
 
@@ -35,6 +39,17 @@ llm = ChatOpenAI(
     model=settings.OPEN_AI_MODEL,
     temperature=settings.OPENAI_TEMPERATURE,
     openai_api_key=settings.OPENAI_API_KEY,
+    timeout=600,  # 10 minutes timeout
+    max_retries=2
+)
+
+# Initialize Qwen LLM for MSA parsing
+qwen_api_key = settings.QWEN_API_KEY if settings.QWEN_API_KEY else settings.OPENAI_API_KEY
+qwen_llm = ChatOpenAI(
+    model=settings.QWEN_MODEL,
+    temperature=settings.OPENAI_TEMPERATURE,
+    openai_api_key=qwen_api_key,
+    openai_api_base=settings.QWEN_INFERENCE_SERVER_URL,
     timeout=600,  # 10 minutes timeout
     max_retries=2
 )
@@ -52,8 +67,13 @@ try:
 except FileNotFoundError:
     logger.warning("evaluation_rubric.txt not found. Rubric evaluation will be disabled.")
 
-# Initialize MSA parser
-msa_parser = MSAParser(llm)
+# Initialize MSA parser with Qwen LLM
+msa_parser = MSAParser(qwen_llm)
+logger.info(f"MSA parser initialized with Qwen model: {settings.QWEN_MODEL}")
+
+# Initialize Risk Assessor with OpenAI LLM (for risk assessment)
+risk_assessor = RiskAssessor(llm)
+logger.info("Risk assessor initialized")
 
 app = FastAPI(title="PDF Chat Server")
 
@@ -531,6 +551,52 @@ async def parse_msa(file: UploadFile = File(...)):
                        f"Try processing a smaller document or contact support. Error: {error_msg[:300]}"
             )
         raise HTTPException(status_code=500, detail=f"Error parsing MSA: {str(e)[:500]}")
+
+
+@app.post("/api/assess-risk")
+async def assess_risk(msa_data: dict):
+    """
+    Assess compliance risk for an MSA by analyzing each clause in parallel.
+    
+    Takes the JSON output from /api/parse-msa and assesses risk for each clause
+    using clause-specific prompts, then combines results.
+    
+    Returns:
+        JSON object with overall compliance score and per-clause assessments
+    """
+    try:
+        logger.info("=" * 80)
+        logger.info("Risk Assessment Request Received")
+        logger.info("=" * 80)
+        
+        # Assess MSA risk (parallel processing)
+        assessment_result = await risk_assessor.assess_msa(msa_data)
+        
+        # Convert to dict for JSON response
+        result_dict = {
+            "status": "success",
+            "overall_compliance_score": assessment_result.overall_compliance_score,
+            "overall_risk_level": assessment_result.overall_risk_level,
+            "summary": assessment_result.summary,
+            "clause_assessments": [
+                {
+                    "clause_name": assessment.clause_name,
+                    "compliance_score": assessment.compliance_score,
+                    "risk_level": assessment.risk_level,
+                    "risk_factors": assessment.risk_factors,
+                    "recommendations": assessment.recommendations,
+                    "details": assessment.details
+                }
+                for assessment in assessment_result.clause_assessments
+            ]
+        }
+        
+        return JSONResponse(content=result_dict)
+        
+    except Exception as e:
+        error_msg = str(e)
+        logger.error(f"Error assessing MSA risk: {error_msg}")
+        raise HTTPException(status_code=500, detail=f"Error assessing risk: {error_msg[:500]}")
 
 
 if __name__ == "__main__":

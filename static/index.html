@@ -514,7 +514,25 @@
                     <span>Parse MSA (Structured Data)</span>
                     <small>POST /api/parse-msa</small>
                 </label>
+                <label class="mode-option">
+                    <input type="radio" name="mode" value="assess-risk">
+                    <span>Assess Risk (from MSA JSON)</span>
+                    <small>POST /api/assess-risk</small>
+                </label>
             </div>
+        </div>
+        
+        <div id="msaJsonInput" style="display: none; margin-bottom: 20px;">
+            <label class="query-label" for="msaJsonTextarea">MSA JSON Data (paste output from Parse MSA):</label>
+            <textarea 
+                id="msaJsonTextarea" 
+                placeholder='{"MASTER_SERVICE_AGREEMENT": {"msa_id": "...", "effective_date": "...", ...}}'
+                style="width: 100%; min-height: 200px; padding: 10px; border: 2px solid #667eea; border-radius: 8px; font-family: monospace; font-size: 0.9em;"
+            ></textarea>
+        </div>
+        
+        <div id="assessRiskBtnContainer" style="display: none; margin-bottom: 20px;">
+            <button class="btn-primary" id="assessRiskBtn">Assess Risk</button>
         </div>
 
         <div class="button-group">
@@ -557,8 +575,13 @@
         const error = document.getElementById('error');
         const responseSection = document.getElementById('responseSection');
         const responseBox = document.getElementById('responseBox');
+        const msaJsonInput = document.getElementById('msaJsonInput');
+        const msaJsonTextarea = document.getElementById('msaJsonTextarea');
+        const assessRiskBtnContainer = document.getElementById('assessRiskBtnContainer');
+        const assessRiskBtn = document.getElementById('assessRiskBtn');
 
         let selectedFile = null;
+        let parsedMsaData = null;
 
         // Click to upload
         uploadArea.addEventListener('click', () => {
@@ -640,6 +663,37 @@
                     endpoint = '/api/evaluate-rubric';
                 } else if (selectedMode === 'parse-msa') {
                     endpoint = '/api/parse-msa';
+                } else if (selectedMode === 'assess-risk') {
+                    endpoint = '/api/assess-risk';
+                    // For assess-risk, we need to send JSON, not form data
+                    const msaJson = msaJsonTextarea.value.trim();
+                    if (!msaJson) {
+                        showError('Please paste MSA JSON data first.');
+                        hideLoading();
+                        processBtn.disabled = false;
+                        return;
+                    }
+                    try {
+                        const msaData = JSON.parse(msaJson);
+                        const response = await fetch(endpoint, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(msaData)
+                        });
+                        const data = await response.json();
+                        if (!response.ok) {
+                            throw new Error(data.detail || 'Error assessing risk');
+                        }
+                        displayRiskAssessmentResults(data);
+                    } catch (err) {
+                        showError(err.message || 'An error occurred while assessing risk.');
+                    } finally {
+                        hideLoading();
+                        processBtn.disabled = false;
+                    }
+                    return;
                 } else {
                     endpoint = '/api/process-pdf';
                 }
@@ -657,9 +711,24 @@
 
                 // Handle MSA parsing response
                 if (selectedMode === 'parse-msa' && data.msa_data) {
+                    parsedMsaData = data.msa_data;
+                    
+                    // Create the full JSON structure with MASTER_SERVICE_AGREEMENT wrapper
+                    const fullMsaJson = {
+                        MASTER_SERVICE_AGREEMENT: data.msa_data
+                    };
+                    
+                    // Populate the textarea with the parsed JSON
+                    msaJsonTextarea.value = JSON.stringify(fullMsaJson, null, 2);
+                    
+                    // Display in response box
                     responseBox.textContent = JSON.stringify(data.msa_data, null, 2);
                     responseSection.classList.add('show');
                     responseSection.querySelector('.response-label').textContent = 'MSA Structured Data (JSON):';
+                    
+                    // Show assess risk button and textarea
+                    assessRiskBtnContainer.style.display = 'block';
+                    msaJsonInput.style.display = 'block';
                 } else {
                     // Display Q&A pairs if available
                     if (data.response) {
@@ -681,6 +750,83 @@
             }
         });
 
+        // Mode change handler
+        document.querySelectorAll('input[name="mode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                if (e.target.value === 'assess-risk') {
+                    msaJsonInput.style.display = 'block';
+                    assessRiskBtnContainer.style.display = 'block';
+                    uploadArea.style.display = 'none';
+                    fileInfo.style.display = 'none';
+                    // If we have parsed MSA data, populate the textarea
+                    if (parsedMsaData) {
+                        const fullMsaJson = {
+                            MASTER_SERVICE_AGREEMENT: parsedMsaData
+                        };
+                        msaJsonTextarea.value = JSON.stringify(fullMsaJson, null, 2);
+                    }
+                } else if (e.target.value === 'parse-msa') {
+                    // Keep textarea visible if we have parsed data
+                    if (parsedMsaData) {
+                        msaJsonInput.style.display = 'block';
+                        assessRiskBtnContainer.style.display = 'block';
+                    } else {
+                        msaJsonInput.style.display = 'none';
+                        assessRiskBtnContainer.style.display = 'none';
+                    }
+                    uploadArea.style.display = 'block';
+                    if (selectedFile) {
+                        fileInfo.style.display = 'block';
+                    }
+                } else {
+                    msaJsonInput.style.display = 'none';
+                    assessRiskBtnContainer.style.display = 'none';
+                    uploadArea.style.display = 'block';
+                    if (selectedFile) {
+                        fileInfo.style.display = 'block';
+                    }
+                }
+            });
+        });
+
+        // Assess Risk button (standalone)
+        assessRiskBtn.addEventListener('click', async () => {
+            const msaJson = msaJsonTextarea.value.trim();
+            if (!msaJson) {
+                showError('Please paste MSA JSON data first.');
+                return;
+            }
+            
+            showLoading('assess-risk');
+            hideError();
+            hideResponse();
+            hideRiskAssessment();
+            assessRiskBtn.disabled = true;
+            
+            try {
+                const msaData = JSON.parse(msaJson);
+                const response = await fetch('/api/assess-risk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(msaData)
+                });
+                
+                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data.detail || 'Error assessing risk');
+                }
+                
+                displayRiskAssessmentResults(data);
+            } catch (err) {
+                showError(err.message || 'An error occurred while assessing risk.');
+            } finally {
+                hideLoading();
+                assessRiskBtn.disabled = false;
+            }
+        });
+
         // Clear button
         clearBtn.addEventListener('click', () => {
             selectedFile = null;
@@ -688,6 +834,16 @@
             fileInfo.classList.remove('show');
             processBtn.disabled = true;
             queryInput.value = '';
+            msaJsonTextarea.value = '';
+            parsedMsaData = null;
+            assessRiskBtnContainer.style.display = 'none';
+            
+            // Hide textarea unless assess-risk mode is selected
+            const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+            if (selectedMode !== 'assess-risk') {
+                msaJsonInput.style.display = 'none';
+            }
+            
             hideResponse();
             hideError();
             hideRiskAssessment();
@@ -699,6 +855,8 @@
                 modeText = 'Evaluating contract against rubric (32 questions)...';
             } else if (mode === 'parse-msa') {
                 modeText = 'Parsing MSA and extracting structured data...';
+            } else if (mode === 'assess-risk') {
+                modeText = 'Assessing risk for all clauses in parallel...';
             } else {
                 modeText = 'Processing PDF and generating Q&A pairs + Risk Assessment...';
             }
@@ -789,6 +947,100 @@
                         `;
                         questionDetailsEl.appendChild(questionItem);
                     });
+                });
+            }
+
+            section.style.display = 'block';
+        }
+
+        function displayRiskAssessmentResults(data) {
+            const section = document.getElementById('riskAssessmentSection');
+            const overallScoreEl = document.getElementById('overallScore');
+            const categoryScoresEl = document.getElementById('categoryScores');
+            const questionDetailsEl = document.getElementById('questionDetails');
+
+            // Display overall score
+            const overallScore = data.overall_compliance_score || 0;
+            const overallRisk = data.overall_risk_level || 'UNKNOWN';
+            overallScoreEl.textContent = `Overall Score: ${overallScore.toFixed(1)}/100 - ${overallRisk}`;
+            overallScoreEl.className = `overall-score ${getRiskClass(overallRisk)}`;
+
+            // Display summary
+            if (data.summary) {
+                const summaryDiv = document.createElement('div');
+                summaryDiv.style.cssText = 'padding: 15px; background: white; border-radius: 8px; margin-bottom: 20px; white-space: pre-wrap;';
+                summaryDiv.textContent = data.summary;
+                categoryScoresEl.innerHTML = '';
+                categoryScoresEl.appendChild(summaryDiv);
+            }
+
+            // Display clause assessments
+            categoryScoresEl.innerHTML = '';
+            if (data.clause_assessments && data.clause_assessments.length > 0) {
+                data.clause_assessments.forEach(clause => {
+                    const clauseCard = document.createElement('div');
+                    clauseCard.className = 'category-card';
+                    clauseCard.innerHTML = `
+                        <div class="category-header">
+                            <span class="category-name">${clause.clause_name.replace(/_/g, ' ').toUpperCase()}</span>
+                            <span class="category-score ${getRiskClass(clause.risk_level)}">
+                                ${clause.compliance_score.toFixed(1)}/100 - ${clause.risk_level}
+                            </span>
+                        </div>
+                        ${clause.risk_factors && clause.risk_factors.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                <strong>Risk Factors:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px;">
+                                    ${clause.risk_factors.map(factor => `<li>${factor}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${clause.recommendations && clause.recommendations.length > 0 ? `
+                            <div style="margin-top: 10px;">
+                                <strong>Recommendations:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px;">
+                                    ${clause.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    `;
+                    categoryScoresEl.appendChild(clauseCard);
+                });
+            }
+
+            // Display detailed breakdown
+            questionDetailsEl.innerHTML = '<h3 style="margin-bottom: 15px; color: #333;">Detailed Clause Breakdown</h3>';
+            if (data.clause_assessments && data.clause_assessments.length > 0) {
+                data.clause_assessments.forEach(clause => {
+                    const clauseItem = document.createElement('div');
+                    clauseItem.className = 'question-item';
+                    clauseItem.style.borderLeft = '4px solid #667eea';
+                    clauseItem.innerHTML = `
+                        <div class="question-text" style="font-size: 1.1em; margin-bottom: 10px;">
+                            ${clause.clause_name.replace(/_/g, ' ').toUpperCase()}
+                        </div>
+                        <div class="question-meta" style="margin-top: 10px;">
+                            <span class="question-score">Compliance Score: ${clause.compliance_score.toFixed(1)}/100</span>
+                            <span class="question-risk ${getRiskClass(clause.risk_level)}">${clause.risk_level}</span>
+                        </div>
+                        ${clause.risk_factors && clause.risk_factors.length > 0 ? `
+                            <div style="margin-top: 15px;">
+                                <strong style="color: #d63031;">Risk Factors:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px; color: #666;">
+                                    ${clause.risk_factors.map(factor => `<li>${factor}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        ${clause.recommendations && clause.recommendations.length > 0 ? `
+                            <div style="margin-top: 15px;">
+                                <strong style="color: #00b894;">Recommendations:</strong>
+                                <ul style="margin: 5px 0; padding-left: 20px; color: #666;">
+                                    ${clause.recommendations.map(rec => `<li>${rec}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                    `;
+                    questionDetailsEl.appendChild(clauseItem);
                 });
             }
 

@@ -9,18 +9,18 @@ from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass, asdict
 from langchain_openai import ChatOpenAI
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 import logging
 
 logger = logging.getLogger(__name__)
 
 
 class EvaluatorSettings(BaseSettings):
+    model_config = ConfigDict(env_file=".env", extra="ignore")
+    
     OPENAI_API_KEY: str
     OPEN_AI_MODEL: str = "gpt-4o"  # Using OpenAI's GPT-4o model
     OPENAI_TEMPERATURE: float = 0
-
-    class Config:
-        env_file = ".env"
 
 
 @dataclass
