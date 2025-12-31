@@ -578,6 +578,8 @@ async def assess_risk(msa_data: dict):
             "status": "success",
             "overall_compliance_score": assessment_result.overall_compliance_score,
             "overall_risk_level": assessment_result.overall_risk_level,
+            "structure_completeness": assessment_result.structure_completeness,
+            "missing_clauses_count": assessment_result.missing_clauses_count,
             "summary": assessment_result.summary,
             "clause_assessments": [
                 {
