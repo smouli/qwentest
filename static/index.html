@@ -500,17 +500,7 @@
             <label class="mode-label">Processing Mode:</label>
             <div class="mode-options">
                 <label class="mode-option">
-                    <input type="radio" name="mode" value="process-pdf" checked>
-                    <span>Process PDF + Risk Assessment</span>
-                    <small>POST /api/process-pdf</small>
-                </label>
-                <label class="mode-option">
-                    <input type="radio" name="mode" value="evaluate-rubric">
-                    <span>Risk Assessment Only</span>
-                    <small>POST /api/evaluate-rubric</small>
-                </label>
-                <label class="mode-option">
-                    <input type="radio" name="mode" value="parse-msa">
+                    <input type="radio" name="mode" value="parse-msa" checked>
                     <span>Parse MSA (Structured Data)</span>
                     <small>POST /api/parse-msa</small>
                 </label>
@@ -645,12 +635,6 @@
                 formData.append('query', query);
             }
 
-            // Set evaluate_rubric based on mode (only for process-pdf)
-            if (selectedMode === 'process-pdf') {
-                formData.append('evaluate_rubric', 'true');
-            }
-            // Note: parse-msa mode doesn't need evaluate_rubric parameter
-
             showLoading(selectedMode);
             hideError();
             hideResponse();
@@ -659,9 +643,7 @@
 
             try {
                 let endpoint;
-                if (selectedMode === 'evaluate-rubric') {
-                    endpoint = '/api/evaluate-rubric';
-                } else if (selectedMode === 'parse-msa') {
+                if (selectedMode === 'parse-msa') {
                     endpoint = '/api/parse-msa';
                 } else if (selectedMode === 'assess-risk') {
                     endpoint = '/api/assess-risk';
@@ -694,8 +676,6 @@
                         processBtn.disabled = false;
                     }
                     return;
-                } else {
-                    endpoint = '/api/process-pdf';
                 }
                 
                 const response = await fetch(endpoint, {
@@ -851,14 +831,12 @@
 
         function showLoading(mode) {
             let modeText;
-            if (mode === 'evaluate-rubric') {
-                modeText = 'Evaluating contract against rubric (32 questions)...';
-            } else if (mode === 'parse-msa') {
+            if (mode === 'parse-msa') {
                 modeText = 'Parsing MSA and extracting structured data...';
             } else if (mode === 'assess-risk') {
                 modeText = 'Assessing risk for all clauses in parallel...';
             } else {
-                modeText = 'Processing PDF and generating Q&A pairs + Risk Assessment...';
+                modeText = 'Processing...';
             }
             loading.querySelector('div:last-child').textContent = modeText;
             loading.classList.add('show');

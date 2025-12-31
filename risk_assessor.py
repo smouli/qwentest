@@ -59,7 +59,11 @@ Analyze the Service Level Agreements section of this MSA and assess compliance r
    - Penalties defined if services are not delivered as expected
    - Service credits or refunds for SLA breaches
    - Escalation procedures for repeated failures
-   - Remedies for non-performance
+   - Remedies for non-performance (repair, correction, replacement, refund, re-performance)
+   - Early termination rights and trigger conditions (breach, unresolved non-performance, data-processing violation, non-payment)
+   - Post-termination obligations (returning confidential information, deleting data, ceasing use)
+   - Liability scope and carve-outs (caps, exclusions, exceptions for fraud, gross negligence, security/privacy breaches, IP infringement, regulatory penalties)
+   - Consequences for late payment (suspension of service, termination rights, cure periods, interest, collections)
 
 RISK FACTORS TO CONSIDER:
 - Missing SLAs entirely = HIGH RISK (no performance guarantees)
